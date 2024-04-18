@@ -513,4 +513,606 @@ public class Main {
             ex.printStackTrace();
         }
     }
+
+    public static ArrayList<Movie> Filter(ArrayList<Movie> lMovies) throws NoSuchFieldException, IllegalAccessException, SecurityException {
+
+        System.out.println("How many fields would you like to filter?");
+        String n = scan.nextLine();
+        int num = Integer.valueOf(n);
+        ArrayList<Movie> filter_field = new ArrayList<Movie>(); //
+
+        for(int k=0; k<=num; k++) {
+            System.out.print("Enter field name: ");
+            String filter_parameter = scan.nextLine();
+            try {
+                Field field = Movie.class.getDeclaredField(filter_parameter);
+                field.setAccessible(true);
+
+                if(field.getName().equals(filter_parameter) && field.getName().equals("Title") ||
+                        field.getName().equals("Overview") || field.getName().equals("Genre") ||
+                        field.getName().equals("Original_Language") || field.getName().equals("Poster_Url")) {
+                    filter_field = Filter_String_Fields(lMovies, filter_parameter);
+                } else if(field.getName().equals(filter_parameter) && field.getName().equals("Release_Date")) {
+                    filter_field = Filter_Date_Fields(lMovies, filter_parameter);
+                } else if(field.getName().equals(filter_parameter) && field.getName().equals("Vote_Count")) {
+                    filter_field = Filter_Numeric_Fields(lMovies, filter_parameter);
+                } else if(field.getName().equals(filter_parameter) && field.getName().equals("Popularity") || field.getName().equals("Vote_Average")) {
+                    filter_field = Filter_Double_Fields(lMovies, filter_parameter);
+                } else {
+                    System.out.println("Invalid Operation");
+                }
+            } catch (Exception e) {
+                //System.out.println("\nERROR!");
+            }
+        }
+
+        if (filter_field.size() != 0) {
+            System.out.println("Would you like to store this data in 'selected_entities_2.csv' file?");
+            System.out.print("Type YES/NO: ");
+            String ans = scan.nextLine();
+            if (ans.equalsIgnoreCase("YES")) {
+                try (FileWriter fw = new FileWriter(new File("selected_entities.csv"))) {
+                    for (int i = 0; i < filter_field.size(); i++) {
+                        fw.write(filter_field.get(i).toString() + '\n');
+                    }
+                    System.out.println("Successfully written!");
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        } else {
+            System.out.println("Unfortunately, nothing is found.");
+        }
+        return filter_field;
+    }
+
+    public static ArrayList<Movie> Filter_String_Fields(ArrayList<Movie> lMovies, String filter) throws NoSuchFieldException, IllegalAccessException, SecurityException {
+        ArrayList<Movie> string_fields = new ArrayList<Movie>();
+
+        System.out.println("\ti. string fields starts with");
+        System.out.println("\tii. string fields ends with");
+        System.out.println("\tiii. string fields contains");
+        System.out.println("\tiv. string fields null (missing values)");
+
+        String string = scan.nextLine();
+        if(string.equals("i") || string.equals("1")) {
+            System.out.print("Enter the starting of fields: ");
+            String starting = scan.nextLine();
+            for(int i=0; i<lMovies.size(); i++) {
+                Field field = Movie.class.getDeclaredField(filter);
+                field.setAccessible(true);
+                String name = (String) field.get(lMovies.get(i));
+                if(name.startsWith(starting)) {
+                    string_fields.add(lMovies.get(i));
+                }
+            }
+        } else if(string.equals("ii") || string.equals("2")) {
+            System.out.print("Enter the ending of fields: ");
+            String ending = scan.nextLine();
+            for(int i=0; i<lMovies.size(); i++) {
+                Field field = Movie.class.getDeclaredField(filter);
+                field.setAccessible(true);
+                String name = (String) field.get(lMovies.get(i));
+                if(name.endsWith(ending)) {
+                    string_fields.add(lMovies.get(i));
+                }
+            }
+        } else if(string.equals("iii") || string.equals("3")) {
+            System.out.println("Enter the part of contains field");
+            String contain = scan.nextLine();
+            for(int i=0; i<lMovies.size(); i++) {
+                Field field = Movie.class.getDeclaredField(filter);
+                field.setAccessible(true);
+                String name = (String) field.get(lMovies.get(i));
+                if(name.contains(contain)) {
+                    string_fields.add(lMovies.get(i));
+                }
+            }
+        } else if(string.equals("iv") || string.equals("4")) {
+            for(int i=0; i<lMovies.size(); i++) {
+                Field field = Movie.class.getDeclaredField(filter);
+                field.setAccessible(true);
+                String name = (String) field.get(lMovies.get(i));
+                if(name.length() == 0) {
+                    string_fields.add(lMovies.get(i));
+                }
+            }
+        } else {
+            System.out.println("Invalid operation");
+        }
+        return string_fields;
+    }
+
+    public static ArrayList<Movie> Filter_Date_Fields(ArrayList<Movie> lMovies, String filter) throws NoSuchFieldException, SecurityException, IllegalAccessException{
+        ArrayList<Movie> date_field = new ArrayList<Movie>();
+
+        System.out.println("\ti. equal (eq)");
+        System.out.println("\tii. greater than (gt)");
+        System.out.println("\tiii. less than (lt)");
+        System.out.println("\tiv. greater and equal to (ge)");
+        System.out.println("\tv. less and equal to (le)");
+        System.out.println("\tvi. between (bt)");
+        System.out.println("\tvii. null (missing values)");
+        System.out.println("\tviii. in a specific year (y)");
+        System.out.println("\tix. in a specific month (m)");
+        System.out.println("\tx. in a specific day (d)");
+
+
+        String string = scan.nextLine();
+
+        if(string.equalsIgnoreCase("eq") || string.equals("i") || string.equals("1")) {
+            System.out.print("Enter the EQUAL value that you want to filter: ");
+            String string2 = scan.nextLine();
+            String equalString[] = string2.split("/");
+            int month = Integer.valueOf(equalString[0]);
+            int day = Integer.valueOf(equalString[1]);
+            int year = Integer.valueOf(equalString[2]);
+            for(int i=0; i<lMovies.size(); i++) {
+                Field field = Movie.class.getDeclaredField(filter);
+                field.setAccessible(true);
+                String name = (String) field.get(lMovies.get(i));
+                int first_date;
+                int second_date;
+                int third_date;
+                if(!name.equals("")) {
+                    String[] string_2 = name.split("/");
+                    first_date = Integer.valueOf(string_2[0]);
+                    second_date = Integer.valueOf(string_2[1]);
+                    third_date = Integer.valueOf(string_2[2]);
+                } else {
+                    first_date = 0;
+                    second_date = 0;
+                    third_date = 0;
+                }
+                if(first_date == month && second_date == day && third_date == year) {
+                    date_field.add(lMovies.get(i));
+                }
+            }
+        } else if(string.equalsIgnoreCase("gt") || string.equals("ii") || string.equals("2")) {
+            System.out.print("Enter the GREATER value that you want to filter: ");
+            String string3 = scan.nextLine();
+            String[] greaterString = string3.split("/");
+            int month = Integer.valueOf(greaterString[0]);
+            int day = Integer.valueOf(greaterString[1]);
+            int year = Integer.valueOf(greaterString[2]);
+            int total_date  = (365 * year) + (31 * month) + day;
+            for(int i=0; i<lMovies.size(); i++) {
+                Field field = Movie.class.getDeclaredField(filter);
+                field.setAccessible(true);
+                String name = (String) field.get(lMovies.get(i));
+                int first_date;
+                int second_date;
+                int third_date;
+                if(!name.equals("")) {
+                    String[] string_3 = name.split("/");
+                    first_date = Integer.valueOf(string_3[0]);
+                    second_date = Integer.valueOf(string_3[1]);
+                    third_date = Integer.valueOf(string_3[2]);
+                } else {
+                    first_date = 0;
+                    second_date = 0;
+                    third_date = 0;
+                }
+                int total = (third_date * 365) + (first_date * 31) + second_date ;
+                if(total > total_date) {
+                    date_field.add(lMovies.get(i));
+                }
+            }
+        } else if(string.equalsIgnoreCase("lt") || string.equals("iii") || string.equals("3")) {
+            System.out.print("Enter the LESS value that you want to filter: ");
+            String string3 = scan.nextLine();
+            String[] greaterString = string3.split("/");
+            int month = Integer.valueOf(greaterString[0]);
+            int day = Integer.valueOf(greaterString[1]);
+            int year = Integer.valueOf(greaterString[2]);
+            int total_date  = (365 * year) + (31 * month) + day;
+            for(int i=0; i<lMovies.size(); i++) {
+                Field field = Movie.class.getDeclaredField(filter);
+                field.setAccessible(true);
+                String name = (String) field.get(lMovies.get(i));
+                int first_date;
+                int second_date;
+                int third_date;
+                if(!name.equals("")) {
+                    String[] string_3 = name.split("/");
+                    first_date = Integer.valueOf(string_3[0]);
+                    second_date = Integer.valueOf(string_3[1]);
+                    third_date = Integer.valueOf(string_3[2]);
+                } else {
+                    first_date = 0;
+                    second_date = 0;
+                    third_date = 0;
+                }
+                int total = (third_date * 365) + (first_date * 31) + second_date ;
+                if(total < total_date) {
+                    date_field.add(lMovies.get(i));
+                }
+            }
+        } else if(string.equalsIgnoreCase("ge") || string.equals("iv") || string.equals("4")) {
+            System.out.print("Enter the GREATER and EQUAL value that you want to filter: ");
+            String string3 = scan.nextLine();
+            String[] greaterString = string3.split("/");
+            int month = Integer.valueOf(greaterString[0]);
+            int day = Integer.valueOf(greaterString[1]);
+            int year = Integer.valueOf(greaterString[2]);
+            int total_date  = (365 * year) + (31 * month) + day;
+            for(int i=0; i<lMovies.size(); i++) {
+                Field field = Movie.class.getDeclaredField(filter);
+                field.setAccessible(true);
+                String name = (String) field.get(lMovies.get(i));
+                int first_date;
+                int second_date;
+                int third_date;
+                if(!name.equals("")) {
+                    String[] string_3 = name.split("/");
+                    first_date = Integer.valueOf(string_3[0]);
+                    second_date = Integer.valueOf(string_3[1]);
+                    third_date = Integer.valueOf(string_3[2]);
+                } else {
+                    first_date = 0;
+                    second_date = 0;
+                    third_date = 0;
+                }
+                int total = (third_date * 365) + (first_date * 31) + second_date ;
+                if(total >= total_date) {
+                    date_field.add(lMovies.get(i));
+                }
+            }
+        } else if(string.equalsIgnoreCase("le") || string.equals("v") || string.equals("5")) {
+            System.out.print("Enter the LESS and EQUAL value that you want to filter: ");
+            String string3 = scan.nextLine();
+            String[] greaterString = string3.split("/");
+            int month = Integer.valueOf(greaterString[0]);
+            int day = Integer.valueOf(greaterString[1]);
+            int year = Integer.valueOf(greaterString[2]);
+            int total_date  = (365 * year) + (31 * month) + day;
+            for(int i=0; i<lMovies.size(); i++) {
+                Field field = Movie.class.getDeclaredField(filter);
+                field.setAccessible(true);
+                String name = (String) field.get(lMovies.get(i));
+                int first_date;
+                int second_date;
+                int third_date;
+                if(!name.equals("")) {
+                    String[] string_3 = name.split("/");
+                    first_date = Integer.valueOf(string_3[0]);
+                    second_date = Integer.valueOf(string_3[1]);
+                    third_date = Integer.valueOf(string_3[2]);
+                } else {
+                    first_date = 0;
+                    second_date = 0;
+                    third_date = 0;
+                }
+                int total = (third_date * 365) + (first_date * 31) + second_date ;
+                if(total < total_date) {
+                    date_field.add(lMovies.get(i));
+                }
+            }
+
+
+        } else if(string.equalsIgnoreCase("ge") || string.equals("iv") || string.equals("4")) {
+            System.out.println("Enter the LOW DATE boundary that you want to filter");
+            String string3 = scan.nextLine();
+            String[] greaterString = string3.split("/");
+            int low_month = Integer.valueOf(greaterString[0]);
+            int low_day = Integer.valueOf(greaterString[1]);
+            int low_year = Integer.valueOf(greaterString[2]);
+            int low_date  = (365 * low_year) + (31 * low_month) + low_day;
+            System.out.println("Enter the HIGH DATE boundary that you want to filter");
+            String string4 = scan.nextLine();
+            String[] greaterHigh = string4.split("/");
+            int high_month = Integer.valueOf(greaterHigh[0]);
+            int high_day = Integer.valueOf(greaterHigh[1]);
+            int high_year = Integer.valueOf(greaterHigh[2]);
+            int high_date  = (365 * high_year) + (31 * high_month) + high_day;
+            for(int i=0; i<lMovies.size(); i++) {
+                Field field = Movie.class.getDeclaredField(filter);
+                field.setAccessible(true);
+                String name = (String) field.get(lMovies.get(i));
+                int first_date;
+                int second_date;
+                int third_date;
+                if(!name.equals("")) {
+                    String[] string_3 = name.split("/");
+                    first_date = Integer.valueOf(string_3[0]);
+                    second_date = Integer.valueOf(string_3[1]);
+                    third_date = Integer.valueOf(string_3[2]);
+                } else {
+                    first_date = 0;
+                    second_date = 0;
+                    third_date = 0;
+                }
+                int total = (third_date * 365) + (first_date * 31) + second_date ;
+                if(total > low_date && high_date > total) {
+                    date_field.add(lMovies.get(i));
+                }
+            }
+        } else if(string.equalsIgnoreCase("null") || string.equals("vii") || string.equals("7")) {
+            for(int i=0; i<lMovies.size(); i++) {
+                Field field = Movie.class.getDeclaredField(filter);
+                field.setAccessible(true);
+                String name = (String) field.get(lMovies.get(i));
+                if(name.length() == 0) {
+                    date_field.add(lMovies.get(i));
+                }
+            }
+        } else if(string.equalsIgnoreCase("y") || string.equals("viii") || string.equals("8")) {
+            System.out.print("Enter the EXACT YEAR value that you want to filter: ");
+            String string3 = scan.nextLine();
+            int year = Integer.valueOf(string3);
+            for(int i=0; i<lMovies.size(); i++) {
+                Field field = Movie.class.getDeclaredField(filter);
+                field.setAccessible(true);
+                String name = (String) field.get(lMovies.get(i));
+                int third_date;
+                if(!name.equals("")) {
+                    String[] aStrings = name.split("/");
+                    third_date = Integer.valueOf(aStrings[2]);
+                } else {
+                    third_date = 0;
+                }
+                if(year == third_date) {
+                    date_field.add(lMovies.get(i));
+                }
+            }
+        } else if(string.equalsIgnoreCase("m") || string.equals("ix") || string.equals("9")) {
+            System.out.print("Enter the EXACT MONTH value that you want to filter: ");
+            String string3 = scan.nextLine();
+            int month = Integer.valueOf(string3);
+            for(int i=0; i<lMovies.size(); i++) {
+                Field field = Movie.class.getDeclaredField(filter);
+                field.setAccessible(true);
+                String name = (String) field.get(lMovies.get(i));
+                int first_date;
+                if(!name.equals("")) {
+                    String[] aStrings = name.split("/");
+                    first_date = Integer.valueOf(aStrings[0]);
+                } else {
+                    first_date = 0;
+                }
+                if(month == first_date) {
+                    date_field.add(lMovies.get(i));
+                }
+            }
+        } else if(string.equalsIgnoreCase("d") || string.equals("x") || string.equals("10")) {
+            System.out.print("Enter the EXACT DAY value that you want to filter: ");
+            String string3 = scan.nextLine();
+            int day = Integer.valueOf(string3);
+            for(int i=0; i<lMovies.size(); i++) {
+                Field field = Movie.class.getDeclaredField(filter);
+                field.setAccessible(true);
+                String name = (String) field.get(lMovies.get(i));
+                int second_date;
+                if(!name.equals("")) {
+                    String[] aStrings = name.split("/");
+                    second_date = Integer.valueOf(aStrings[1]);
+                } else {
+                    second_date = 0;
+                }
+                if(day == second_date) {
+                    date_field.add(lMovies.get(i));
+                }
+            }
+        } else {
+            System.out.println("Invalid operation");
+        }
+        return date_field;
+    }
+
+    public static ArrayList<Movie> Filter_Numeric_Fields(ArrayList<Movie> lMovies, String filter) throws NoSuchFieldException, SecurityException, IllegalAccessException, IllegalArgumentException {
+        ArrayList<Movie> filter_numeric = new ArrayList<Movie>();
+
+        System.out.println("\ti. equal (eq)");
+        System.out.println("\tii. greater than (gt)");
+        System.out.println("\tiii. less than (lt)");
+        System.out.println("\tiv. greater and equal to (ge)");
+        System.out.println("\tv. less and equal to (le)");
+        System.out.println("\tvi. between (bt)");
+        System.out.println("\tvii. null (missing values)");
+
+        String numeric = scan.nextLine();
+        if(numeric.equalsIgnoreCase("i") || numeric.equalsIgnoreCase("1") || numeric.equalsIgnoreCase("eq")) {
+            System.out.print("Enter EQUAL value that you want to filter: ");
+            String equalString = scan.nextLine();
+            int answer = Integer.valueOf(equalString);
+            for(int i=0; i<lMovies.size(); i++) {
+                Field field = Movie.class.getDeclaredField(filter);
+                field.setAccessible(true);
+                String name = (String) field.get(lMovies.get(i));
+                int num = Integer.valueOf(name);
+                if(num == answer) {
+                    filter_numeric.add(lMovies.get(i));
+                }
+            }
+        } else if(numeric.equalsIgnoreCase("ii") || numeric.equalsIgnoreCase("2") || numeric.equalsIgnoreCase("gt")) {
+            System.out.print("Enter GREATER value that you want to filter: ");
+            String equalString = scan.nextLine();
+            int answer = Integer.valueOf(equalString);
+            for(int i=0; i<lMovies.size(); i++) {
+                Field field = Movie.class.getDeclaredField(filter);
+                field.setAccessible(true);
+                String name = (String) field.get(lMovies.get(i));
+                int num = Integer.valueOf(name);
+                if(num > answer) {
+                    filter_numeric.add(lMovies.get(i));
+                }
+            }
+        } else if(numeric.equalsIgnoreCase("iii") || numeric.equalsIgnoreCase("3") || numeric.equalsIgnoreCase("lt")) {
+            System.out.print("Enter LESS value that you want to filter: ");
+            String equalString = scan.nextLine();
+            int answer = Integer.valueOf(equalString);
+            for(int i=0; i<lMovies.size(); i++) {
+                Field field = Movie.class.getDeclaredField(filter);
+                field.setAccessible(true);
+                String name = (String) field.get(lMovies.get(i));
+                int num = Integer.valueOf(name);
+                if(num < answer) {
+                    filter_numeric.add(lMovies.get(i));
+                }
+            }
+        } else if(numeric.equalsIgnoreCase("iv") || numeric.equalsIgnoreCase("4") || numeric.equalsIgnoreCase("ge")) {
+            System.out.print("Enter GREATER and EQUAL value that you want to filter: ");
+            String equalString = scan.nextLine();
+            int answer = Integer.valueOf(equalString);
+            for(int i=0; i<lMovies.size(); i++) {
+                Field field = Movie.class.getDeclaredField(filter);
+                field.setAccessible(true);
+                String name = (String) field.get(lMovies.get(i));
+                int num = Integer.valueOf(name);
+                if(num >= answer) {
+                    filter_numeric.add(lMovies.get(i));
+                }
+            }
+        } else if(numeric.equalsIgnoreCase("v") || numeric.equalsIgnoreCase("5") || numeric.equalsIgnoreCase("le")) {
+            System.out.print("Enter LESS and EQUAL value that you want to filter: ");
+            String equalString = scan.nextLine();
+            int answer = Integer.valueOf(equalString);
+            for(int i=0; i<lMovies.size(); i++) {
+                Field field = Movie.class.getDeclaredField(filter);
+                field.setAccessible(true);
+                String name = (String) field.get(lMovies.get(i));
+                int num = Integer.valueOf(name);
+                if(num <= answer) {
+                    filter_numeric.add(lMovies.get(i));
+                }
+            }
+        } else if(numeric.equalsIgnoreCase("vi") || numeric.equalsIgnoreCase("6") || numeric.equalsIgnoreCase("bt")) {
+            System.out.print("Enter the LOW boundary of the range: ");
+            int low_boundary = scan.nextInt();
+            System.out.print("Enter the HIGH boundary of the range: ");
+            int high_boundary = scan.nextInt();
+            for(int i=0; i<lMovies.size(); i++) {
+                Field field = Movie.class.getDeclaredField(filter);
+                field.setAccessible(true);
+                String name = (String)field.get(lMovies.get(i));
+                int num = Integer.valueOf(name);
+                if(num > low_boundary && num < high_boundary) {
+                    filter_numeric.add(lMovies.get(i));
+                }
+            }
+        } else if(numeric.equalsIgnoreCase("null") || numeric.equalsIgnoreCase("vii") || numeric.equalsIgnoreCase("7")) {
+            for(int i=0; i<lMovies.size(); i++) {
+                Field field = Movie.class.getDeclaredField(filter);
+                field.setAccessible(true);
+                String name = (String)field.get(lMovies.get(i));
+                if(name.length() == 0) {
+                    filter_numeric.add(lMovies.get(i));
+                }
+            }
+        } else {
+            System.out.println("Invalid operation");
+        }
+
+        return filter_numeric;
+    }
+
+    public static ArrayList<Movie> Filter_Double_Fields(ArrayList<Movie> lMovies, String filter) throws NoSuchFieldException, SecurityException, IllegalAccessException, IllegalArgumentException {
+        ArrayList<Movie> double_fields = new ArrayList<Movie>();
+
+        System.out.println("\ti. equal (eq)");
+        System.out.println("\tii. greater than (gt)");
+        System.out.println("\tiii. less than (lt)");
+        System.out.println("\tiv. greater and equal to (ge)");
+        System.out.println("\tv. less and equal to (le)");
+        System.out.println("\tvi. between (bt)");
+        System.out.println("\tvii. null (missing values)");
+
+        String doubleString = scan.nextLine();
+        if(doubleString.equals("i") || doubleString.equals("1") || doubleString.equalsIgnoreCase("eq")) {
+            System.out.print("Enter EQUAL value that you want to filter: ");
+            String dString = scan.nextLine();
+            double answer = Double.valueOf(dString);
+            for(int i=0; i<lMovies.size(); i++) {
+                Field field = Movie.class.getDeclaredField(filter);
+                field.setAccessible(true);
+                String name = (String) field.get(lMovies.get(i));
+                double double_num = Double.valueOf(name);
+                if(double_num == answer) {
+                    double_fields.add(lMovies.get(i));
+                }
+            }
+        } else if(doubleString.equals("ii") || doubleString.equals("2") || doubleString.equalsIgnoreCase("gt")) {
+            System.out.print("Enter GREATER THAN value that you want to filter: ");
+            String dString = scan.nextLine();
+            double answer = Double.valueOf(dString);
+            for(int i=0; i<lMovies.size(); i++) {
+                Field field = Movie.class.getDeclaredField(filter);
+                field.setAccessible(true);
+                String name = (String) field.get(lMovies.get(i));
+                double double_num = Double.valueOf(name);
+                if(double_num > answer) {
+                    double_fields.add(lMovies.get(i));
+                }
+            }
+        } else if(doubleString.equals("iii") || doubleString.equals("3") || doubleString.equalsIgnoreCase("lt")) {
+            System.out.print("Enter LESS THAN value that you want to filter: ");
+            String dString = scan.nextLine();
+            double answer = Double.valueOf(dString);
+            for(int i=0; i<lMovies.size(); i++) {
+                Field field = Movie.class.getDeclaredField(filter);
+                field.setAccessible(true);
+                String name = (String) field.get(lMovies.get(i));
+                double double_num = Double.valueOf(name);
+                if(double_num < answer) {
+                    double_fields.add(lMovies.get(i));
+                }
+            }
+        } else if(doubleString.equals("iv") || doubleString.equals("4") || doubleString.equalsIgnoreCase("ge")) {
+            System.out.print("Enter GREATER and EQUAL to value that you want to filter: ");
+            String dString = scan.nextLine();
+            double answer = Double.valueOf(dString);
+            for(int i=0; i<lMovies.size(); i++) {
+                Field field = Movie.class.getDeclaredField(filter);
+                field.setAccessible(true);
+                String name = (String) field.get(lMovies.get(i));
+                double double_num = Double.valueOf(name);
+                if(double_num >= answer) {
+                    double_fields.add(lMovies.get(i));
+                }
+            }
+        } else if(doubleString.equals("v") || doubleString.equals("5") || doubleString.equalsIgnoreCase("le")) {
+            System.out.print("Enter LESS and EQUAL to value that you want to filter: ");
+            String dString = scan.nextLine();
+            double answer = Double.valueOf(dString);
+            for(int i=0; i<lMovies.size(); i++) {
+                Field field = Movie.class.getDeclaredField(filter);
+                field.setAccessible(true);
+                String name = (String) field.get(lMovies.get(i));
+                double double_num = Double.valueOf(name);
+                if(double_num <= answer) {
+                    double_fields.add(lMovies.get(i));
+                }
+            }
+        } else if(doubleString.equals("vi") || doubleString.equals("6") || doubleString.equalsIgnoreCase("bt")) {
+            System.out.print("Enter LOW value that you want to filter: ");
+            String dString1 = scan.nextLine();
+            double answer1 = Double.valueOf(dString1);
+            System.out.print("Enter HIGH value that you want to filter: ");
+            String dString2 = scan.nextLine();
+            double answer2 = Double.valueOf(dString2);
+            for(int i=0; i<lMovies.size(); i++) {
+                Field field = Movie.class.getDeclaredField(filter);
+                field.setAccessible(true);
+                String name = (String) field.get(lMovies.get(i));
+                double double_num = Double.valueOf(name);
+                if(double_num > answer1 && double_num < answer2) {
+                    double_fields.add(lMovies.get(i));
+                }
+            }
+        } else if(doubleString.equals("vii") || doubleString.equals("7") || doubleString.equalsIgnoreCase("null")) {
+            for(int i=0; i<lMovies.size(); i++) {
+                Field field = Movie.class.getDeclaredField(filter);
+                field.setAccessible(true);
+                String name = (String) field.get(lMovies.get(i));
+                if(name.length() == 0) {
+                    double_fields.add(lMovies.get(i));
+                }
+            }
+        } else {
+            System.out.println("Invalid Operation");
+        }
+
+
+        return double_fields;
+    }
 }
