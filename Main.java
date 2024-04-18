@@ -374,4 +374,130 @@ public class Main {
                 break;
         }
     }
+
+    public static ArrayList<Movie> Search_Entities(ArrayList<Movie> lMovies) {
+        System.out.print("FOR STRING FIELDS -> Enter parametersfield name first\nFOR NON-STRING FIELDS Enter the exact values\n>");
+        ArrayList<Movie> selected_entities = new ArrayList<Movie>();
+        String string = scan.nextLine();
+        if(string.contains("Title") || string.toLowerCase().contains("Overview") || string.toLowerCase().contains("Original_Language") || string.toLowerCase().contains("Poster_Url")) {
+            System.out.print("Contains part that you want to search: ");
+            String c = scan.nextLine();
+            if(string.contains("Title")) {
+                for(int i=0; i<lMovies.size(); i++) {
+                    if(lMovies.get(i).getTitle().contains(c)) {
+                        selected_entities.add(lMovies.get(i));
+                    }
+                }
+            }
+            if(string.contains("Overview")) {
+                for(int i=0; i<lMovies.size(); i++) {
+                    if(lMovies.get(i).getOverview().contains(c)) {
+                        selected_entities.add(lMovies.get(i));
+                    }
+                }
+            }
+            if(string.contains("Original_Language")) {
+                for(int i=0; i<lMovies.size(); i++) {
+                    if(lMovies.get(i).getOriginal_Language().contains(c)) {
+                        selected_entities.add(lMovies.get(i));
+                    }
+                }
+            }
+            if(string.contains("Poster_Url")) {
+                for(int i=0; i<lMovies.size(); i++) {
+                    if(lMovies.get(i).getPoster_Url().contains(c)) {
+                        selected_entities.add(lMovies.get(i));
+                    }
+                }
+            }
+            if(selected_entities.size() != 0) {
+                System.out.println("Would you like to save this data in the file 'selected_entities.csv'?");
+                System.out.print("Type YES/NO: ");
+                String answer = scan.nextLine();
+                if(answer.equalsIgnoreCase("YES")) {
+                    try(FileWriter fw= new FileWriter(new File("selected_entities.csv"));
+                        BufferedWriter bw = new BufferedWriter(fw))
+                    {
+                        for(int i=0; i<selected_entities.size(); i++) {
+                            bw.write(selected_entities.get(i).toString());
+                        }
+                        System.out.println("Successfully written!");
+                    } catch(Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        } else if(string.contains("Release_Date") || string.contains("Popularity") || string.contains("Vote_Count") ||
+                string.contains("Vote_Average"))
+        {
+            for(int i=0; i<lMovies.size(); i++) {
+                if(string.contains("Release_Date") && ("Release_Date " + lMovies.get(i).getRelease_Date()).equals(string)) {
+                    selected_entities.add(lMovies.get(i));
+                }
+                if(string.contains("Popularity") && ("Popularity " + lMovies.get(i).getPopularity()).equals(string)) {
+                    selected_entities.add(lMovies.get(i));
+                }
+                if(string.contains("Vote_Count") && ("Vote_Count " + lMovies.get(i).getVote_Count()).equals(string)) {
+                    selected_entities.add(lMovies.get(i));
+                }
+                if(string.contains("Vote_Average") && ("Vote_Average " + lMovies.get(i).getVote_Average()).equals(string)) {
+                    selected_entities.add(lMovies.get(i));
+                }
+            }
+            if(selected_entities.size() != 0) {
+                System.out.println("Would you like to save this data in the file 'selected_entities.csv'?");
+                System.out.print("Type YES/NO: ");
+                String answer = scan.nextLine();
+                if(answer.equalsIgnoreCase("YES")) {
+                    try(FileWriter fw= new FileWriter(new File("selected_entities.csv"));
+                        BufferedWriter bw = new BufferedWriter(fw))
+                    {
+                        for(int i=0; i<selected_entities.size(); i++) {
+                            bw.write(selected_entities.get(i).toString());
+                        }
+                        System.out.println("Successfully written!");
+                    } catch(Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        } else if(string.contains("Genre")) {
+            System.out.print("Genre Types: ");
+            System.out.print("Music, Drama, History, Science Fiction, War, Mystery, Thriller, Horror, Crime, Fantasy, Family");
+            System.out.println(" Adventure, Romance, Animation, Comedy, TV Movie, Documentary, Action");
+            for(int i=0; i<lMovies.size(); i++) {
+                if(string.contains("Genre") && lMovies.get(i).getGenre().equals("Action") ||
+                        lMovies.get(i).getGenre().equals("Music") || lMovies.get(i).getGenre().equals("Drama") ||
+                        lMovies.get(i).getGenre().equals("History") || lMovies.get(i).getGenre().equals("Science Fiction") ||
+                        lMovies.get(i).getGenre().equals("War") || lMovies.get(i).getGenre().equals("Mystery") ||
+                        lMovies.get(i).getGenre().equals("Thriller") || lMovies.get(i).getGenre().equals("Horror") ||
+                        lMovies.get(i).getGenre().equals("Crime") || lMovies.get(i).getGenre().equals("Fantasy") ||
+                        lMovies.get(i).getGenre().equals("Family") || lMovies.get(i).getGenre().equals("Adventure") ||
+                        lMovies.get(i).getGenre().equals("Romance") || lMovies.get(i).getGenre().equals("Animation") ||
+                        lMovies.get(i).getGenre().equals("Comedy") || lMovies.get(i).getGenre().equals("TV Movie") ||
+                        lMovies.get(i).getGenre().equals("Documentary")) {
+                    selected_entities.add(lMovies.get(i));
+                }
+                System.out.println("Would you like to store this data in 'entities.csv' file?");
+                System.out.print("Type YES/NO: ");
+                String answer = scan.nextLine();
+                if(answer.equalsIgnoreCase("YES")) {
+                    try(FileWriter fw= new FileWriter(new File("selected_entities.csv"));
+                        BufferedWriter bw = new BufferedWriter(fw))
+                    {
+                        for(int k=0; k<selected_entities.size(); k++) {
+                            bw.write(selected_entities.get(k).toString());
+                        }
+                        System.out.println("Successfully written!");
+                    } catch(Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+
+        } else {
+            System.out.println("Invalid operation!");
+        }
+        return selected_entities;
+    }
 }
