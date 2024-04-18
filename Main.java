@@ -500,4 +500,17 @@ public class Main {
         }
         return selected_entities;
     }
+
+    public static void List_Column_Names(ArrayList<Movie> lMovies) {
+        try(FileReader fr = new FileReader(new File("mymoviedb.csv"));
+            BufferedReader br = new BufferedReader(fr)) {
+
+            String lString = br.readLine();
+            String columns[] = lString.split(",");
+            System.out.println("[" + columns[0] + ", " + columns[1] + ", " + columns[2] + ", " + columns[3] + ", " + columns[4] +
+                    ", " + columns[5] + ", " + columns[6] + ", " + columns[7] + ", " + columns[8] + "]");
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }
 }
