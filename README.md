@@ -41,9 +41,11 @@ MovieData-CLI reads movie records from a local CSV file (`mymoviedb.csv`) and pr
 
 ## Project Structure
 MovieData-CLI/
+```
 ├── Main.java        # Entry point; menu logic and all data operations
 ├── Movie.java       # Movie model class with getters, setters, and toString
 └── mymoviedb.csv    # Movie dataset (must be present in the working directory)
+```
 
 ---
 
@@ -59,8 +61,7 @@ MovieData-CLI/
 **1. Clone the repository**
 
 ```bash
-git clone https://github.com/your-username/MovieData-CLI.git
-cd MovieData-CLI
+git clone https://github.com/nqasanova/MovieData-CLI
 ```
 
 **2. Compile the source files**
